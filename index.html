@@ -1,0 +1,86 @@
+<html>
+<head>
+    <script type="text/javascript" src="timeplot-complete.js"></script>
+    
+</head>
+<body>
+hallo!
+    <div id="timeplot1" style="height: 150px"></div>
+</body>
+<link href="timeplot-single.css" rel="stylesheet" type="text/css" />
+<script type="text/javascript">
+function tonload() {
+
+    var dataURL = "data.txt";
+
+    var dataFilter = function(data) {
+        for (var i = 0; i < data.length; i++) {
+            var row = data[i];
+            row[0] = row[0].replace(/\//g,"-");
+        }
+        return data;
+    };
+
+    var eventSource = new Timeplot.DefaultEventSource();
+    var eventSource2 = new Timeplot.DefaultEventSource();
+
+    var quietLine  = new Timeplot.Color('#82A6A2');
+    var loudLine   = new Timeplot.Color('#284452');
+    var lightFill  = new Timeplot.Color('#DEE5D1');
+    var gridColor  = new Timeplot.Color('#888888');
+
+    var timeGeometry = new Timeplot.DefaultTimeGeometry({
+        gridColor: gridColor,
+        axisLabelsPlacement: "top",
+        min: 0
+    });
+
+    var webTraffic = new Timeplot.ColumnSource(eventSource,2);
+    console.log("column source, first load")
+    console.dir(webTraffic);
+    var avgWebTraffic = new Timeplot.Processor(webTraffic,Timeplot.Operator.average, { size: 15 });
+    var webGeometry = new Timeplot.DefaultValueGeometry({
+        gridColor: gridColor,
+        axisLabelsPlacement: "left",
+        min: 0
+    });
+
+    var plotsInfo1 = [
+        Timeplot.createPlotInfo({
+            id: "web clean",
+            dataSource: webTraffic,
+            valueGeometry: webGeometry,
+            timeGeometry: timeGeometry,
+            lineColor: quietLine
+        }),
+        Timeplot.createPlotInfo({
+            id: "web clean avg",
+            dataSource: avgWebTraffic,
+            valueGeometry: webGeometry,
+            timeGeometry: timeGeometry,
+            lineColor: loudLine,
+            showValues: true
+        }),
+        Timeplot.createPlotInfo({
+            id: "events",
+            eventSource: eventSource2,
+            valueGeometry: webGeometry,
+            timeGeometry: timeGeometry,
+            lineColor: loudLine
+        })
+    ];
+
+    timeplot1 = Timeplot.create(document.getElementById("timeplot1"), plotsInfo1);
+    console.log("before loading data");
+    console.dir(timeplot1);
+    timeplot1.loadText(dataURL, " ", eventSource, dataFilter);
+    // console.dir(eventSource);
+    console.log("after loading")
+    console.dir(timeplot1);
+    // timeplot1.loadXML(eventsURL, eventSource2);
+    
+}
+
+window.onload = tonload();
+</script>
+</html>
