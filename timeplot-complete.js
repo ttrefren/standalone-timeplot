@@ -10283,7 +10283,7 @@ Timeline.NativeDateUnit.change = function(v, n) {
  *  Simile Timeplot API
  *
  *  Include Timeplot in your HTML file as follows:
- *    <script src="http://static.simile.mit.edu/timeplot/api/1.0/timeplot-api.js" type="text/javascript"></script>
+ *    <script src="http://api.simile-widgets.org/timeplot/1.1/timeplot-api.js" type="text/javascript"></script>
  *
  *==================================================*/
 
@@ -10328,7 +10328,6 @@ Timeline.NativeDateUnit.change = function(v, n) {
         window.Timeplot = {
             loaded:     false,
             params:     { bundle: true, autoCreate: true },
-            namespace:  "http://simile.mit.edu/2007/06/timeplot#",
             importers:  {}
         };
     
@@ -10386,7 +10385,7 @@ Timeline.NativeDateUnit.change = function(v, n) {
             }
         }
 
-        var timeplotURLPrefix = (local) ? "/timeplot/api/1.0/" : Timeplot.urlPrefix;
+        var timeplotURLPrefix = Timeplot.urlPrefix;
 
         if (local && !("console" in window)) {
             var firebug = [ timeplotURLPrefix + "lib/firebug/firebug.js" ];
@@ -10434,7 +10433,7 @@ Timeline.NativeDateUnit.change = function(v, n) {
         if (typeof Timeline != "undefined") {
             loadTimeplot();
         } else {
-            var timelineURL = (local) ? "/timeline/api-2.0/timeline-api.js?bundle=false" : "http://static.simile.mit.edu/timeline/api-2.0/timeline-api.js";
+            var timelineURL = "http://api.simile-widgets.org/timeline/2.3.1/timeline-api.js?bundle=true";
             window.SimileAjax_onLoad = loadTimeplot;
             SimileAjax.includeJavascriptFile(document, timelineURL);
         }
@@ -10444,9 +10443,7 @@ Timeline.NativeDateUnit.change = function(v, n) {
     if (typeof SimileAjax == "undefined") {
         window.SimileAjax_onLoad = loadTimeline;
         
-        var url = local ?
-            "/ajax/api-2.0/simile-ajax-api.js?bundle=false" :
-            "http://static.simile.mit.edu/ajax/api-2.0/simile-ajax-api.js?bundle=true";
+        var url = "http://api.simile-widgets.org/ajax/2.2.1/simile-ajax-api.js?bundle=true";
                 
         var createScriptElement = function() {
             var script = document.createElement("script");
@@ -10946,8 +10943,8 @@ Timeplot._Impl.prototype = {
             // inserting copyright and link to simile
             var elmtCopyright = SimileAjax.Graphics.createTranslucentImage(Timeplot.urlPrefix + "images/copyright.png");
             elmtCopyright.className = "timeplot-copyright";
-            elmtCopyright.title = "Timeplot (c) SIMILE - http://simile.mit.edu/timeplot/";
-            SimileAjax.DOM.registerEvent(elmtCopyright, "click", function() { window.location = "http://simile.mit.edu/timeplot/"; });
+            elmtCopyright.title = "SIMILE Timeplot - http://www.simile-widgets.organ/timeplot/";
+            SimileAjax.DOM.registerEvent(elmtCopyright, "click", function() { window.location = "http://www.simile-widgets.organ/timeplot/"; });
             containerDiv.appendChild(elmtCopyright);
             
             var timeplot = this;
@@ -11004,7 +11001,7 @@ Timeplot._Impl.prototype = {
             this._message.containerDiv.style.right = "20%";
             this._message.containerDiv.style.minWidth = "20em";
             this._message.contentDiv.className = "timeplot-message";
-            this._message.contentDiv.innerHTML = "We're terribly sorry, but your browser is not currently supported by <a href='http://simile.mit.edu/timeplot/'>Timeplot</a>.<br><br> We are working on supporting it in the near future but, for now, see the <a href='http://simile.mit.edu/wiki/Timeplot_Limitations'>list of currently supported browsers</a>.";
+            this._message.contentDiv.innerHTML = "We're terribly sorry, but your browser is not currently supported by <a href='http://www.simile-widgets.org/timeplot/'>Timeplot</a>.";
             this._message.containerDiv.style.display = "block";
 
             containerDiv.appendChild(this._message.containerDiv);
@@ -11473,6 +11470,8 @@ Timeplot.DefaultEventSource.prototype.loadText = function(text, separator, url, 
     if (added) {
         this._fire("onAddMany", []);
     }
+    
+    // hi this is tim
 }
 
 /*
@@ -11537,6 +11536,8 @@ Timeplot.DefaultEventSource.prototype._parseText = function (text, separator) {
         }
     }
     if (table.length < 0) return;                     // null data
+    console.log("This is the table - default event source parsetext")
+    console.dir(table);
     return table;
 }
 
