@@ -11423,7 +11423,10 @@ Timeplot.Plot.prototype = {
  * 
  * @constructor
  */
+
+
 Timeplot.DefaultEventSource = function(eventIndex) {
+    console.log("Creating event source")
     Timeline.DefaultEventSource.apply(this, arguments);
 };
 
@@ -11470,8 +11473,6 @@ Timeplot.DefaultEventSource.prototype.loadText = function(text, separator, url, 
     if (added) {
         this._fire("onAddMany", []);
     }
-    
-    // hi this is tim
 }
 
 /*
@@ -11638,10 +11639,12 @@ Timeplot.DataSource.prototype = {
      * Return the value associated with the given time in this time series
      */
     getValue: function(t) {
+        console.log("In DataSource getvalue");
         if (this._data) {
             for (var i = 0; i < this._data.times.length; i++) {
                 var l = this._data.times[i];
                 if (l >= t) {
+                    console.dir(this._data.values[i]);
                     return this._data.values[i];
                 }
             }
@@ -11717,7 +11720,7 @@ Object.extend(Timeplot.ColumnSource.prototype,Timeplot.DataSource.prototype);
 Timeplot.ColumnSource.prototype.dispose = function() {
     this.removeListener(this._processingListener);
     this._clear();
-}
+};
 
 Timeplot.ColumnSource.prototype._process = function() {
     var count = this._eventSource.getCount();
@@ -11761,8 +11764,10 @@ Timeplot.ColumnSource.prototype._process = function() {
 }
 
 Timeplot.ColumnSource.prototype._getValue = function(event) {
+    console.log("In columnsource getValue");
+    console.dir(event.getValues()[this._column]);
     return parseFloat(event.getValues()[this._column]);
-}
+};
 
 // ---------------------------------------------------------------
 
@@ -11783,6 +11788,122 @@ Timeplot.ColumnDiffSource.prototype._getValue = function(event) {
     var a = parseFloat(event.getValues()[this._column]);
     var b = parseFloat(event.getValues()[this._column2]);
     return a - b;
+};
+
+// -----------------------------------------------------------------------
+
+/**
+ * Implementation of a DataSource that extracts the time series out of a 
+ * single column from the events using a named column instead of a numeric index.
+ * Added by Tim Trefren, tim@mixpanel.com
+ * 
+ * @constructor
+ */
+Timeplot.NamedColumnSource = function(eventSource, column) {
+    Timeplot.DataSource.apply(this, arguments);
+    console.log(eventSource._event.names);
+    // this._column = eventSource._event.names[column];
+};
+
+Object.extend(Timeplot.NamedColumnSource.prototype,Timeplot.ColumnSource.prototype);
+
+Timeplot.JsonEventSource = function(eventIndex) {
+    console.log("Creating JsonEventSource")
+    Timeplot.DefaultEventSource.apply(this, arguments);
+};
+
+Object.extend(Timeplot.JsonEventSource.prototype, Timeplot.DefaultEventSource.prototype);
+
+Timeplot.JsonEventSource.prototype.loadText = function(json, separator, url, filter, format) {
+    console.log("Loading text in JsonEventSource")
+    if (json == null) {
+        return;
+    }
+
+    this._events.maxValues = new Array();
+    // var base = this._getBaseURL(url);
+
+    if (!format) format = 'iso8601';
+    var parseDateTimeFunction = this._events.getUnit().getParser(format);
+
+    // Sort & store event names
+    var events = [];
+    for (var event_name in json.values) {
+        events[events.length] = event_name;
+    }
+    events.sort();
+    this._events.names = events;
+    
+    var data = this._parseText(json, events)
+
+    var added = false;
+
+    if (filter) {
+        data = filter(data);
+    }
+
+    if (data) {
+        for (var i = 0; i < data.length; i++){
+            var row = data[i];
+            if (row.length > 1) {
+                var dateStr = SimileAjax.jQuery.trim(row[0]);
+                var date = parseDateTimeFunction(dateStr);
+                if (date) {
+                    var evt = new Timeplot.DefaultEventSource.NumericEvent(date,row.slice(1));
+                    this._events.add(evt);
+                    added = true;
+                }
+            }
+        }
+    }
+
+    if (added) {
+        this._fire("onAddMany", []);
+    }
+}
+
+/*
+ * Parse the JSON response.
+ * 
+ * Expects the following data format:
+ * {
+ *       'series': [date, date, date, date, ...],
+ *       'values': {
+ *           'event': {
+ *               date: amount,
+ *               date: amount,
+ *               date: amount,
+ *               },
+ *           'event': {
+ *               date: amount,
+ *               date: amount,
+ *               date: amount,
+ *               },
+ *           }
+ *       }
+ * }
+ */
+Timeplot.JsonEventSource.prototype._parseText = function (json, events) {
+    var table = [];
+    for (var date in json.series) {
+        var row = [];
+        if (date) {
+            row[row.length] = json.series[date];
+            for (var e in events) {
+                if (e) {
+                    console.dir(json.values);
+                    row[row.length] = (json.series[date] in json.values[events[e]]) ? json.values[events[e]][json.series[date]] : 0; 
+                }
+            }
+            if (row.length > 1) {
+                table[table.length] = row;
+            }
+        }
+
+    }
+    console.log("This is the table - json event source parsetext")
+    console.dir(table);
+    return table;
 }
 /**
  * Geometries
