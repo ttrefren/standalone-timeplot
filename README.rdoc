@@ -1,3 +1,5 @@
+** This fork is incomplete **
+
 = Simile Timeplot - Standalone version
 
 The Simile project has done some very nice work in creating a timeline
